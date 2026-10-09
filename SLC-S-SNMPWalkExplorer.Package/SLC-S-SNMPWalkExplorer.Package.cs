@@ -5,7 +5,6 @@ using Skyline.AppInstaller;
 using Skyline.DataMiner.Automation;
 using Skyline.DataMiner.Net.AppPackages;
 using Skyline.DataMiner.Utils.SecureCoding.SecureIO;
-using Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer;
 using SLCSSNMPWalkExplorerApi;
 
 /// <summary>
@@ -28,7 +27,6 @@ internal class Script
 			var installer = new AppInstaller(Engine.SLNetRaw, context);
 			installer.InstallDefaultContent();
 			SnmpWalkConfigurationSchema.EnsureProvisioned(engine);
-			installer.InstallUserDefinedApiDefinitions(engine);
 			SecurePath setupContentPath = SecurePath.CreateSecurePath(installer.GetSetupContentDirectory());
 			SecurePath sourceFrontendPath = SecurePath.ConstructSecurePath(setupContentPath, "SLC-S-SNMPWalkBrowser");
 			SecurePath webpagesPublicPath = SecurePath.CreateSecurePath("C:\\Skyline DataMiner\\Webpages\\Public");
