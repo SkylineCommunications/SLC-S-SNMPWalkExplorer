@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Save, Server, Settings2, Trash2 } from 'lucide-react'
-import { createConfiguration, deleteConfiguration, listConfigurations, updateConfiguration } from './api/walkApi'
+import { Play, Save, Server, Settings2, Trash2 } from 'lucide-react'
+import { createConfiguration, deleteConfiguration, executeWalk, listConfigurations, updateConfiguration } from './api/walkApi'
 import type { WalkConfiguration } from './api/walkApi'
 
 const roots = ['1.3.6.1.1', '1.3.6.1.2', '1.3.6.1.3', '1.3.6.1.4', '1.3.6.1.5', '1.3.6.1.6', '1.3.6.1.7']
@@ -18,7 +18,9 @@ export function WalkConfigurations() {
   const [configuration, setConfiguration] = useState<WalkConfiguration>(emptyConfiguration)
   const [selectedRoots, setSelectedRoots] = useState<Set<string>>(new Set(roots))
   const [error, setError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  const [isExecuting, setIsExecuting] = useState(false)
 
   useEffect(() => {
     void listConfigurations().then(setConfigurations).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : 'Unable to load saved configurations.'))
@@ -32,6 +34,7 @@ export function WalkConfigurations() {
     setConfiguration(saved)
     setSelectedRoots(new Set(saved.discoveryRoots.split(';').filter(Boolean)))
     setError('')
+    setSuccessMessage('')
   }
 
   function toggleRoot(root: string) {
@@ -51,6 +54,7 @@ export function WalkConfigurations() {
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError('')
+    setSuccessMessage('')
     setIsSaving(true)
     try {
       const saved = configuration.id
@@ -72,6 +76,7 @@ export function WalkConfigurations() {
     if (!configuration.id) return
     if (!window.confirm(`Are you sure you want to delete configuration "${configuration.name}"?`)) return
     setError('')
+    setSuccessMessage('')
     setIsSaving(true)
     try {
       await deleteConfiguration(configuration.id)
@@ -82,6 +87,47 @@ export function WalkConfigurations() {
       setError(reason instanceof Error ? reason.message : 'Unable to delete the configuration.')
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  async function handleExecuteWalk() {
+    if (!configuration.targetAddress) {
+      setError('A target address is required to execute a walk.')
+      return
+    }
+
+    const defaultCommunity = configuration.credentialReference || 'public'
+    const community = window.prompt(`Enter SNMP community string for ${configuration.targetAddress}:`, defaultCommunity)
+    if (community === null) {
+      return
+    }
+
+    setError('')
+    setSuccessMessage('')
+    setIsExecuting(true)
+
+    try {
+      const response = await executeWalk({
+        targetAddress: configuration.targetAddress,
+        targetPort: configuration.targetPort,
+        snmpCommunity: community,
+        timeoutMilliseconds: configuration.timeoutMilliseconds,
+        retries: configuration.retries,
+        logLevel: configuration.logLevel,
+        maximumWalkVariables: configuration.maximumWalkVariables,
+        concurrentWalkWorkers: configuration.concurrentWalkWorkers,
+        useGetBulk: configuration.useGetBulk,
+        bulkMaxRepetitions: configuration.bulkMaxRepetitions,
+        partitionRecommendationBindings: configuration.partitionRecommendationBindings,
+        getBulkDiagnosticOid: configuration.getBulkDiagnosticOid,
+        discoveryRoots: configuration.discoveryRoots,
+      })
+
+      setSuccessMessage(`Walk dispatched in background on DMA (Correlation ID: ${response.correlationId}). Check Overview tab once completed.`)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Unable to execute walk on DataMiner.')
+    } finally {
+      setIsExecuting(false)
     }
   }
 
@@ -118,14 +164,20 @@ export function WalkConfigurations() {
         <div className="section-heading form-section"><div><span className="eyebrow">Discovery scope</span><h3>Roots</h3></div></div>
         <div className="root-options">{roots.map((root) => <label key={root} className="checkbox-label"><input type="checkbox" checked={selectedRoots.has(root)} onChange={() => toggleRoot(root)} /> {root}</label>)}</div>
         {error && <p className="form-error" role="alert">{error}</p>}
+        {successMessage && <p className="form-success" role="status">{successMessage}</p>}
         <div className="form-actions">
-          <button type="button" onClick={() => { setConfiguration(emptyConfiguration()); setSelectedRoots(new Set(roots)); setError('') }}>New configuration</button>
+          <button type="button" onClick={() => { setConfiguration(emptyConfiguration()); setSelectedRoots(new Set(roots)); setError(''); setSuccessMessage('') }}>New configuration</button>
           {configuration.id && (
-            <button className="delete-button" type="button" disabled={isSaving} onClick={() => void handleDelete()}>
+            <button className="execute-walk-button" type="button" disabled={isSaving || isExecuting} onClick={() => void handleExecuteWalk()}>
+              <Play size={17} /> {isExecuting ? 'Starting walk...' : 'Execute walk'}
+            </button>
+          )}
+          {configuration.id && (
+            <button className="delete-button" type="button" disabled={isSaving || isExecuting} onClick={() => void handleDelete()}>
               <Trash2 size={17} /> Delete configuration
             </button>
           )}
-          <button className="search-button" disabled={isSaving} type="submit">
+          <button className="search-button" disabled={isSaving || isExecuting} type="submit">
             <Save size={17} /> {isSaving ? 'Saving...' : configuration.id ? 'Update configuration' : 'Save configuration'}
           </button>
         </div>

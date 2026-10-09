@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { ChevronDown, ChevronRight, CircleAlert, Download, FileSearch, Network, Search, Server, ShieldCheck, User } from 'lucide-react'
+import { ChevronDown, ChevronRight, CircleAlert, Download, FileSearch, Network, Search, Server, ShieldCheck, Trash2, User } from 'lucide-react'
 import { getConnectionId, getCurrentUser, startKeepAlive } from './api/auth'
 import type { KeepAliveStatus } from './api/auth'
-import { downloadRawArtifact, getTree, listArtifacts, searchBindings } from './api/walkApi'
+import { deleteArtifact, downloadRawArtifact, getTree, listArtifacts, searchBindings } from './api/walkApi'
 import type { Binding, TreeNode, WalkArtifact } from './domain/contracts'
 import { WalkConfigurations } from './WalkConfigurations'
 import './App.css'
@@ -61,6 +61,7 @@ function App() {
   const [matchCount, setMatchCount] = useState(0)
   const [loadError, setLoadError] = useState('')
   const [treeLoadError, setTreeLoadError] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     const connectionId = getConnectionId()
@@ -165,6 +166,26 @@ function App() {
     setExpandedOids(branchOids)
   }
 
+  async function handleDeleteArtifact(artifact: WalkArtifact) {
+    if (!window.confirm(`Are you sure you want to delete walk run "${artifact.rawFileName}" from ${artifact.targetAddress}:${artifact.targetPort}?`)) {
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      await deleteArtifact(artifact.id)
+      const remaining = artifacts.filter((item) => item.id !== artifact.id)
+      setArtifacts(remaining)
+      if (selectedId === artifact.id) {
+        setSelectedId(remaining[0]?.id ?? '')
+      }
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : 'Unable to delete walk artifact.')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -195,7 +216,7 @@ function App() {
           </div>
         </aside>
         {selected && page === 'overview' && <section className="content">
-          <div className="page-heading"><div><span className="eyebrow">Collection evidence</span><h2>{selected.targetAddress}:{selected.targetPort}</h2><p>{selected.rawFileName}</p></div><div className="tree-actions"><button type="button" title="Download raw walk evidence" onClick={() => void downloadRawArtifact(selected.id, selected.rawFileName)}><Download size={15} aria-hidden="true" /> Download raw walk</button><span className={`state-badge ${selected.isComplete ? 'complete' : 'partial'}`}>{selected.isComplete ? 'Complete' : 'Partial'}</span></div></div>
+          <div className="page-heading"><div><span className="eyebrow">Collection evidence</span><h2>{selected.targetAddress}:{selected.targetPort}</h2><p>{selected.rawFileName}</p></div><div className="tree-actions"><button type="button" title="Download raw walk evidence" onClick={() => void downloadRawArtifact(selected.id, selected.rawFileName)}><Download size={15} aria-hidden="true" /> Download raw walk</button><button type="button" className="delete-action-button" title="Delete walk run evidence" disabled={isDeleting} onClick={() => void handleDeleteArtifact(selected)}><Trash2 size={15} aria-hidden="true" /> Delete walk</button><span className={`state-badge ${selected.isComplete ? 'complete' : 'partial'}`}>{selected.isComplete ? 'Complete' : 'Partial'}</span></div></div>
           <section className="stats-grid">
             <div className="stat"><Server size={18} /><span>Protocol</span><strong>{selected.snmpVersion}</strong></div>
             <div className="stat"><FileSearch size={18} /><span>Bindings</span><strong>{formatNumber(selected.totalBindings)}</strong></div>

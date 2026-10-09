@@ -27,5 +27,7 @@ Validate a release on a controlled SNMP target:
 3. Run a zero-binding failure and verify that both the raw evidence and metadata sidecar are published before Automation reports failure.
 4. Run the isolated GETBULK diagnostic before enabling GETBULK for a production collection.
 5. Verify Explorer artifact listing, search, tree, raw download, and configuration save/load through the deployed `SLC-S-SNMPWalkExplorer.Bridge` Automation script while signed in through DataMiner authentication.
+6. Verify walk execution trigger from the **Configurations** tab: select a target, click **Execute walk**, provide the community string, and verify that the collector subscript starts asynchronously in background without web UI timeouts.
+7. Verify evidence cleanup from the **Overview** tab: click **Delete walk** on a selected artifact, accept the confirmation, and verify that both `<name>.walk` and `<name>.walk.metadata.json` are removed from `C:\Skyline DataMiner\Documents\SLC-S-SNMPWalkCollector`.
 
 Record the target DMA version and validation outcome with the release. Do not raise `MinimumRequiredDmVersion` based only on referenced package versions.

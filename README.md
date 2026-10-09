@@ -2,6 +2,14 @@
 
 DataMiner Automation components for collecting SNMP walk evidence and inspecting completed runs in a browser.
 
+![SNMP Walk Explorer Overview](docs/images/snmp-walk-explorer.png)
+
+### Screen Captures
+
+| Completed Runs & Evidence Overview | OID Hierarchy & Binding Search | Saved Walk Configurations |
+| :---: | :---: | :---: |
+| ![Overview](docs/images/snmp-walk-explorer-overview.png) | ![OID Tree](docs/images/snmp-walk-explorer-tree.png) | ![Configurations](docs/images/snmp-walk-explorer-configurations.png) |
+
 ## Components
 
 - **Collector**: probes SNMPv1 and SNMPv2c, walks configured non-overlapping numeric OID roots, and writes immutable JSON Lines evidence with a metadata commit marker.
@@ -38,7 +46,11 @@ Install the combined Explorer `.dmapp` on the target DMA. Open the browser throu
 {PROTOCOL}://{DOMAIN}/auth/?url=%2Fpublic%2FSLC-S-SNMPWalkBrowser%2Findex.html
 ```
 
-The browser calls the packaged `SLC-S-SNMPWalkExplorer.Bridge` Automation script through DataMiner's authenticated browser API. It saves non-secret configuration records in DOM and reads only committed evidence identified by artifact ID. Those records are not yet wired to start collector executions; run the collector through Automation with its declared script parameters.
+The browser calls the packaged `SLC-S-SNMPWalkExplorer.Bridge` Automation script through DataMiner's authenticated browser API. It saves non-secret configuration records in DOM and reads committed evidence identified by artifact ID:
+
+- **Executing a walk**: From the **Configurations** tab, select a saved target and click **Execute walk**. Enter the SNMP community string at the prompt. The bridge launches the collector script asynchronously in the background on the DMA without blocking the web session.
+- **Cleaning up runs**: From the **Overview** tab, select any completed or partial walk run and click **Delete walk** (with confirmation) to remove both the raw `.walk` data and the `.walk.metadata.json` marker from the DMA.
+- **Direct Automation execution**: You can also run `SLC-S-SNMPWalkCollector` directly through DataMiner Automation with its declared script parameters.
 
 ## Documentation
 

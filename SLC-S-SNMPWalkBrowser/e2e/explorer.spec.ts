@@ -220,3 +220,81 @@ test('redirects to DataMiner auth when session cookie is missing', async ({ page
   await page.goto('/')
   await expect.poll(() => redirectedUrl).toContain('/auth/?url=')
 })
+
+test('deletes a walk run artifact from the overview page after confirmation', async ({ page }) => {
+  let deletedArtifactId: string | undefined
+
+  await mockBridge(page, (action, request) => {
+    if (action === 'ListArtifacts') return artifacts
+    if (action === 'ListConfigurations') return []
+    if (action === 'GetArtifactTree') return { oid: 'root', label: 'Observed OIDs', bindings: 1, children: [] }
+    if (action === 'DeleteArtifact') {
+      deletedArtifactId = (request as { artifactId: string }).artifactId
+      return { success: true }
+    }
+    throw new Error(`Unexpected bridge action: ${action}`)
+  })
+
+  page.on('dialog', (dialog) => dialog.accept())
+
+  await page.goto('/')
+  const firstRunButton = page.locator('.run-item').filter({ hasText: '192.0.2.10' })
+  await expect(firstRunButton).toBeVisible()
+
+  await page.getByRole('button', { name: 'Delete walk' }).click()
+
+  await expect.poll(() => deletedArtifactId).toBe('first-run')
+  await expect(firstRunButton).not.toBeVisible()
+  await expect(page.locator('.run-item').filter({ hasText: '192.0.2.11' })).toBeVisible()
+})
+
+test('dispatches walk execution from the configurations page with community string', async ({ page }) => {
+  let executionRequest: Record<string, unknown> | undefined
+
+  await mockBridge(page, (action, request) => {
+    if (action === 'ListArtifacts') return { artifacts: [] }
+    if (action === 'ListConfigurations') {
+      return [
+        {
+          id: 'cfg-switch',
+          name: 'Core Switch',
+          targetAddress: '10.0.0.1',
+          targetPort: 161,
+          credentialReference: 'community-secret',
+          timeoutMilliseconds: 5000,
+          retries: 2,
+          logLevel: 1,
+          maximumWalkVariables: 100000,
+          concurrentWalkWorkers: 4,
+          useGetBulk: true,
+          bulkMaxRepetitions: 25,
+          partitionRecommendationBindings: 1000,
+          getBulkDiagnosticOid: '',
+          discoveryRoots: '1.3.6.1.1',
+        },
+      ]
+    }
+    if (action === 'ExecuteWalk') {
+      executionRequest = request as Record<string, unknown>
+      return { success: true, correlationId: 'corr-12345' }
+    }
+    throw new Error(`Unexpected bridge action: ${action}`)
+  })
+
+  page.on('dialog', (dialog) => {
+    if (dialog.type() === 'prompt') {
+      void dialog.accept('custom-community-val')
+    }
+  })
+
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Configurations' }).click()
+  await page.getByRole('button', { name: /Core Switch/ }).click()
+
+  await page.getByRole('button', { name: 'Execute walk' }).click()
+
+  await expect.poll(() => executionRequest).toBeTruthy()
+  expect(executionRequest?.targetAddress).toBe('10.0.0.1')
+  expect(executionRequest?.snmpCommunity).toBe('custom-community-val')
+  await expect(page.getByText(/Walk dispatched in background on DMA/)).toBeVisible()
+})

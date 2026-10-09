@@ -1,6 +1,7 @@
 namespace SLCSSNMPWalkExplorerApi
 {
 using System;
+using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
@@ -78,6 +79,13 @@ break;
 case "DownloadArtifact":
 result = DownloadArtifact(Deserialize<ArtifactRequest>(GetRequiredParameterValue(engine, "RequestJson")));
 break;
+case "DeleteArtifact":
+DeleteArtifact(Deserialize<ArtifactRequest>(GetRequiredParameterValue(engine, "RequestJson")));
+result = "{\"success\":true}";
+break;
+case "ExecuteWalk":
+result = ExecuteWalk(engine, Deserialize<WalkExecutionRequest>(GetRequiredParameterValue(engine, "RequestJson")));
+break;
 default:
 throw new ArgumentException("Unsupported bridge action: " + action + ".");
 }
@@ -131,6 +139,57 @@ throw new ArgumentException("The requested committed walk artifact was not found
 return rawArtifact;
 }
 
+private static void DeleteArtifact(ArtifactRequest request)
+{
+if (request == null || String.IsNullOrWhiteSpace(request.ArtifactId))
+{
+throw new ArgumentException("The artifact ID is required.");
+}
+
+if (!new WalkArtifactCatalog(WalkArtifactCatalog.DefaultArtifactDirectory).TryDeleteArtifact(request.ArtifactId))
+{
+throw new ArgumentException("The requested committed walk artifact was not found or could not be deleted.");
+}
+}
+
+private static string ExecuteWalk(IEngine engine, WalkExecutionRequest request)
+{
+if (request == null)
+{
+throw new ArgumentException("Execution request parameters are required.");
+}
+
+if (String.IsNullOrWhiteSpace(request.TargetAddress))
+{
+throw new ArgumentException("Target address is required.");
+}
+
+string correlationId = !String.IsNullOrWhiteSpace(request.RunCorrelationId)
+? request.RunCorrelationId
+: "walk_" + DateTime.UtcNow.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture) + "_" + Guid.NewGuid().ToString("N").Substring(0, 8);
+
+SubScriptOptions subScript = engine.PrepareSubScript("SLC-S-SNMPWalkCollector");
+subScript.Synchronous = false;
+subScript.SelectScriptParam("TargetAddress", request.TargetAddress.Trim());
+subScript.SelectScriptParam("TargetPort", (request.TargetPort > 0 ? request.TargetPort : 161).ToString(CultureInfo.InvariantCulture));
+subScript.SelectScriptParam("SnmpCommunity", request.SnmpCommunity ?? String.Empty);
+subScript.SelectScriptParam("TimeoutMilliseconds", (request.TimeoutMilliseconds > 0 ? request.TimeoutMilliseconds : 5000).ToString(CultureInfo.InvariantCulture));
+subScript.SelectScriptParam("Retries", (request.Retries >= 0 ? request.Retries : 2).ToString(CultureInfo.InvariantCulture));
+subScript.SelectScriptParam("LogLevel", (request.LogLevel >= 0 ? request.LogLevel : 1).ToString(CultureInfo.InvariantCulture));
+subScript.SelectScriptParam("MaximumWalkVariables", (request.MaximumWalkVariables > 0 ? request.MaximumWalkVariables : 100000).ToString(CultureInfo.InvariantCulture));
+subScript.SelectScriptParam("ConcurrentWalkWorkers", (request.ConcurrentWalkWorkers > 0 ? request.ConcurrentWalkWorkers : 4).ToString(CultureInfo.InvariantCulture));
+subScript.SelectScriptParam("UseGetBulk", request.UseGetBulk ? "true" : "false");
+subScript.SelectScriptParam("BulkMaxRepetitions", (request.BulkMaxRepetitions > 0 ? request.BulkMaxRepetitions : 25).ToString(CultureInfo.InvariantCulture));
+subScript.SelectScriptParam("PartitionRecommendationBindings", (request.PartitionRecommendationBindings > 0 ? request.PartitionRecommendationBindings : 1000).ToString(CultureInfo.InvariantCulture));
+subScript.SelectScriptParam("GetBulkDiagnosticOid", request.GetBulkDiagnosticOid ?? String.Empty);
+subScript.SelectScriptParam("DiscoveryRoots", request.DiscoveryRoots ?? String.Empty);
+subScript.SelectScriptParam("RunCorrelationId", correlationId);
+
+subScript.StartScript();
+
+return "{\"success\":true,\"correlationId\":\"" + correlationId + "\"}";
+}
+
 private static string GetRequiredParameterValue(IEngine engine, string parameterName)
 {
 ScriptParam parameter = engine.GetScriptParam(parameterName);
@@ -171,6 +230,52 @@ internal class ConfigurationIdRequest
 {
 [DataMember(Name = "id")]
 public string Id { get; set; }
+}
+
+[DataContract]
+internal sealed class WalkExecutionRequest
+{
+[DataMember(Name = "targetAddress")]
+public string TargetAddress { get; set; }
+
+[DataMember(Name = "targetPort")]
+public int TargetPort { get; set; }
+
+[DataMember(Name = "snmpCommunity")]
+public string SnmpCommunity { get; set; }
+
+[DataMember(Name = "timeoutMilliseconds")]
+public int TimeoutMilliseconds { get; set; }
+
+[DataMember(Name = "retries")]
+public int Retries { get; set; }
+
+[DataMember(Name = "logLevel")]
+public int LogLevel { get; set; }
+
+[DataMember(Name = "maximumWalkVariables")]
+public int MaximumWalkVariables { get; set; }
+
+[DataMember(Name = "concurrentWalkWorkers")]
+public int ConcurrentWalkWorkers { get; set; }
+
+[DataMember(Name = "useGetBulk")]
+public bool UseGetBulk { get; set; }
+
+[DataMember(Name = "bulkMaxRepetitions")]
+public int BulkMaxRepetitions { get; set; }
+
+[DataMember(Name = "partitionRecommendationBindings")]
+public int PartitionRecommendationBindings { get; set; }
+
+[DataMember(Name = "getBulkDiagnosticOid")]
+public string GetBulkDiagnosticOid { get; set; }
+
+[DataMember(Name = "discoveryRoots")]
+public string DiscoveryRoots { get; set; }
+
+[DataMember(Name = "runCorrelationId")]
+public string RunCorrelationId { get; set; }
 }
 
 [DataContract]
