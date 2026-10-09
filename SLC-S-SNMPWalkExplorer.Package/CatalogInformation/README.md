@@ -4,7 +4,7 @@ SNMP Walk Explorer is a DataMiner solution for reviewing evidence published by t
 
 It installs:
 
-- a User-Defined API for completed evidence bundles and non-secret DOM configuration records;
+- an authenticated Automation bridge script for completed evidence bundles and non-secret DOM configuration records;
 - a browser application for metadata, root outcomes, bounded OID-tree navigation, binding search, and raw-evidence download; and
 - the collector Automation script.
 
