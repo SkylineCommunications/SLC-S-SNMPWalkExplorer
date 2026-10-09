@@ -23,9 +23,9 @@
 	<ItemGroup>
 		<PackageReference Include="Skyline.DataMiner.Core.AppPackageInstaller" Version="4.2.0" />
 		<PackageReference Include="Skyline.DataMiner.Dev.Automation" Version="10.6.8" />
-		<PackageReference Include="Skyline.DataMiner.Utils.DOM" Version="10.5.2.8" />
-		<PackageReference Include="Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer" Version="10.6.8.2" />
-		<PackageReference Include="System.Collections.Immutable" Version="9.0.0" />
+		<PackageReference Include="Skyline.DataMiner.Utils.DOM" Version="10.6.1.1" />
+		<PackageReference Include="Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer" Version="10.6.8.3" />
+		<PackageReference Include="System.Collections.Immutable" Version="10.0.12" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -37,7 +37,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Skyline.DataMiner.CICD.CSharpAnalysis.Analyzer" Version="2.1.2">
+		<PackageReference Include="Skyline.DataMiner.CICD.CSharpAnalysis.Analyzer" Version="2.2.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
