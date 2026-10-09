@@ -1,0 +1,60 @@
+﻿<Project Sdk="Skyline.DataMiner.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net48</TargetFramework>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<DataMinerType>Package</DataMinerType>
+		<GenerateDataMinerPackage>True</GenerateDataMinerPackage>
+		<MinimumRequiredDmVersion>10.6.0.0-17344</MinimumRequiredDmVersion>
+		<FrontendProjectDir>$(MSBuildProjectDirectory)\..\SLC-S-SNMPWalkBrowser</FrontendProjectDir>
+		<FrontendDistDir>$(FrontendProjectDir)\dist</FrontendDistDir>
+		<FrontendPackageDir>$(MSBuildProjectDirectory)\SetupContent\SLC-S-SNMPWalkBrowser</FrontendPackageDir>
+		<SkipFrontendBuild Condition="'$(SkipFrontendBuild)' == ''">false</SkipFrontendBuild>
+		<!-- <MinimumRequiredDmWebVersion>10.6.2 (CU0)</MinimumRequiredDmWebVersion> -->
+		<Version>1.0.0</Version>
+		<VersionComment>Initial Version</VersionComment>
+		<!-- Do NOT fill in the Organization Token here. This points to either an Environment Variable skyline__sdk__dataminertoken holding the organization token or a Visual Studio User Secret holding the token. -->
+		<CatalogPublishKeyName>skyline:sdk:dataminertoken</CatalogPublishKeyName>
+		<CatalogDefaultDownloadKeyName>skyline:sdk:dataminertoken</CatalogDefaultDownloadKeyName>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Skyline.DataMiner.Core.AppPackageInstaller" Version="4.2.0" />
+		<PackageReference Include="Skyline.DataMiner.Dev.Automation" Version="10.6.8" />
+		<PackageReference Include="Skyline.DataMiner.Utils.DOM" Version="10.5.2.8" />
+		<PackageReference Include="Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer" Version="10.6.8.2" />
+		<PackageReference Include="System.Collections.Immutable" Version="9.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Include="..\SLC-S-SNMPWalkExplorer.Api\SnmpWalkConfigurationSchema.cs" Link="SnmpWalkConfigurationSchema.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<UdapiProject Include="..\SLC-S-SNMPWalkExplorer.Api\SLC-S-SNMPWalkExplorer.Api.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Skyline.DataMiner.CICD.CSharpAnalysis.Analyzer" Version="2.1.2">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Skyline.DataMiner.Utils.SecureCoding.Analyzers" Version="2.2.3">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<Target Name="PrepareSnmpWalkBrowser" BeforeTargets="Build" Condition="Exists('$(FrontendProjectDir)\package.json') and '$(SkipFrontendBuild)' != 'true'">
+		<Message Importance="high" Text="Building SLC-S-SNMPWalkBrowser frontend for dmapp packaging..." />
+		<Exec Command="npm run build" WorkingDirectory="$(FrontendProjectDir)" />
+		<RemoveDir Directories="$(FrontendPackageDir)" Condition="Exists('$(FrontendPackageDir)')" />
+		<MakeDir Directories="$(FrontendPackageDir)" />
+		<ItemGroup>
+			<FrontendDistFiles Include="$(FrontendDistDir)\**\*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(FrontendDistFiles)" DestinationFiles="@(FrontendDistFiles->'$(FrontendPackageDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
+	</Target>
+</Project>

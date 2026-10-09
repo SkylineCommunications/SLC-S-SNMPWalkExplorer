@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<DMSScript options="272" xmlns="http://www.skyline.be/automation">
+<Name>SLC-S-SNMPWalkCollector</Name>
+<Description>Probes SNMPv1 and SNMPv2c, walks configured numeric prefixes with bounded GETNEXT workers, and publishes immutable JSON Lines .walk data with metadata.</Description>
+<Type>Automation</Type>
+<Author>Shawn Michaud</Author>
+<CheckSets>FALSE</CheckSets>
+<Folder></Folder>
+<Interactivity>Auto</Interactivity>
+<Protocols>
+</Protocols>
+<Memory>
+</Memory>
+<Parameters>
+<ScriptParameter id="1" type="password" values="">
+<Description>SnmpCommunity</Description>
+</ScriptParameter>
+<ScriptParameter id="2" type="string" values="">
+<Description>TargetAddress</Description>
+</ScriptParameter>
+<ScriptParameter id="3" type="string" values="">
+<Description>TargetPort</Description>
+</ScriptParameter>
+<ScriptParameter id="4" type="string" values="">
+<Description>TimeoutMilliseconds</Description>
+</ScriptParameter>
+<ScriptParameter id="5" type="string" values="">
+<Description>Retries</Description>
+</ScriptParameter>
+<ScriptParameter id="6" type="string" values="">
+<Description>LogLevel</Description>
+</ScriptParameter>
+<ScriptParameter id="7" type="string" values="">
+<Description>MaximumWalkVariables</Description>
+</ScriptParameter>
+<ScriptParameter id="8" type="string" values="">
+<Description>ConcurrentWalkWorkers</Description>
+</ScriptParameter>
+<ScriptParameter id="9" type="string" values="">
+<Description>UseGetBulk</Description>
+</ScriptParameter>
+<ScriptParameter id="10" type="string" values="">
+<Description>BulkMaxRepetitions</Description>
+</ScriptParameter>
+<ScriptParameter id="11" type="string" values="">
+<Description>PartitionRecommendationBindings</Description>
+</ScriptParameter>
+<ScriptParameter id="12" type="string" values="">
+<Description>GetBulkDiagnosticOid</Description>
+</ScriptParameter>
+<ScriptParameter id="13" type="string" values="">
+<Description>DiscoveryRoots</Description>
+</ScriptParameter>
+<ScriptParameter id="14" type="string" values="">
+<Description>RunCorrelationId</Description>
+</ScriptParameter>
+</Parameters>
+<Script>
+<Exe id="13" type="csharp">
+<Value><![CDATA[[Project:SLC-S-SNMPWalkCollector]]]></Value>
+<Message></Message>
+</Exe>
+</Script>
+</DMSScript>
+
+
+
+
+
+

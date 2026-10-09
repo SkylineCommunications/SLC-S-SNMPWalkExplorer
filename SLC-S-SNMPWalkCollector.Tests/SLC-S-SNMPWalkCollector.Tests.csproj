@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.6.4" />
+    <PackageReference Include="MSTest.TestFramework" Version="3.6.4" />
+    <PackageReference Include="Skyline.DataMiner.Utils.SecureCoding" Version="2.2.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\SLC-S-SNMPWalkCollector\WalkPrimitives.cs" Link="WalkPrimitives.cs" />
+    <Compile Include="..\SLC-S-SNMPWalkCollector\WalkConnectionConfiguration.cs" Link="WalkConnectionConfiguration.cs" />
+    <Compile Include="..\SLC-S-SNMPWalkCollector\WalkRunSettingsSnapshot.cs" Link="WalkRunSettingsSnapshot.cs" />
+    <Compile Include="..\SLC-S-SNMPWalkCollector\WalkModels.cs" Link="WalkModels.cs" />
+    <Compile Include="..\SLC-S-SNMPWalkCollector\QaSnmpClient.cs" Link="QaSnmpClient.cs" />
+    <Compile Include="..\SLC-S-SNMPWalkExplorer.Api\WalkArtifactCatalog.cs" Link="WalkArtifactCatalog.cs" />
+  </ItemGroup>
+</Project>

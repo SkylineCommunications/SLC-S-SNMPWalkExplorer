@@ -1,0 +1,21 @@
+# .NET build output
+[Bb]in/
+[Oo]bj/
+[Tt]est[Rr]esults/
+
+# Node.js build output
+node_modules/
+dist/
+playwright-report/
+test-results/
+
+# Package staging output generated from the browser build
+SLC-S-SNMPWalkExplorer.Package/SetupContent/SLC-S-SNMPWalkBrowser/
+
+# Local tooling and secrets
+.vs/
+.vscode/
+*.user
+*.suo
+.env
+.env.*
