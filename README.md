@@ -2,6 +2,8 @@
 
 DataMiner Automation components for collecting SNMP walk evidence and inspecting completed runs in a browser.
 
+![SNMP Walk Explorer Screen Capture](docs/images/snmp-walk-explorer.png)
+
 ## Components
 
 - **Collector**: probes SNMPv1 and SNMPv2c, walks configured non-overlapping numeric OID roots, and writes immutable JSON Lines evidence with a metadata commit marker.

@@ -60,8 +60,8 @@ documentation_url: https://github.com/SkylineCommunications/SLC-S-SNMPWalkExplor
 #   The email and url are optional, and should be in valid email/URL formats.
 owners:
   - name: 'Shawn Michaud'
-    email: 
-    url: 
+    email: '106123223+ShawnMSkyline@users.noreply.github.com'
+    url: 'https://github.com/ShawnMSkyline'
 
 # [Optional]
 # Tags that allow you to categorize your Catalog items.
