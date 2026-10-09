@@ -2,7 +2,13 @@
 
 DataMiner Automation components for collecting SNMP walk evidence and inspecting completed runs in a browser.
 
-![SNMP Walk Explorer Screen Capture](docs/images/snmp-walk-explorer.png)
+![SNMP Walk Explorer Overview](docs/images/snmp-walk-explorer.png)
+
+### Screen Captures
+
+| Completed Runs & Evidence Overview | OID Hierarchy & Binding Search | Saved Walk Configurations |
+| :---: | :---: | :---: |
+| ![Overview](docs/images/snmp-walk-explorer-overview.png) | ![OID Tree](docs/images/snmp-walk-explorer-tree.png) | ![Configurations](docs/images/snmp-walk-explorer-configurations.png) |
 
 ## Components
 
