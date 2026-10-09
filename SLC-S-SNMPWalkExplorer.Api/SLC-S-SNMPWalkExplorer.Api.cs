@@ -144,7 +144,7 @@ namespace SLCSSNMPWalkExplorerApi
 		/// <summary>
 		/// Saves a non-secret configuration.
 		/// </summary>
-		[HttpPost("configs")]
+		[HttpPost("configs/create")]
 		[Produces("application/json")]
 		public IApiResult CreateConfiguration(IEngine engine, [FromBody] WalkConfiguration configuration)
 		{

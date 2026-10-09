@@ -95,7 +95,7 @@ export async function createConfiguration(configuration: WalkConfiguration): Pro
     throw new Error('The SNMP walk API base URL is not configured.')
   }
 
-  const response = await fetch(`${apiBaseUrl}/configs`, {
+  const response = await fetch(`${apiBaseUrl}/configs/create`, {
     method: 'POST',
     credentials: 'same-origin',
     headers: { 'Content-Type': 'application/json' },

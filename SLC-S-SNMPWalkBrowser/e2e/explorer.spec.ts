@@ -59,3 +59,27 @@ test('loads and refreshes the observed OID hierarchy for the selected artifact',
   await expect(root).toContainText('2 bindings')
   await expect.poll(() => requestedTreeIds).toEqual(['first-run', 'second-run'])
 })
+
+test('saves a configuration through the dedicated create route', async ({ page }) => {
+  let requestMethod = ''
+  let requestBody: { name: string } | undefined
+
+  await page.route('**/api/v1/custom/snmp-walk-explorer/artifacts', (route) => route.fulfill({ json: { artifacts: [] } }))
+  await page.route('**/api/v1/custom/snmp-walk-explorer/configs', (route) => route.fulfill({ json: [] }))
+  await page.route('**/api/v1/custom/snmp-walk-explorer/configs/create', (route) => {
+    requestMethod = route.request().method()
+    requestBody = route.request().postDataJSON() as { name: string }
+    return route.fulfill({ json: { ...requestBody, id: 'saved-configuration' } })
+  })
+
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Configurations' }).click()
+  await page.getByLabel('Name').fill('Edge router')
+  await page.getByLabel('Target address').fill('192.0.2.10')
+  await page.getByLabel('Credential reference').fill('snmp-readonly')
+  await page.getByRole('button', { name: 'Save configuration' }).click()
+
+  await expect.poll(() => requestMethod).toBe('POST')
+  expect(requestBody?.name).toBe('Edge router')
+  await expect(page.getByText('Edge router', { exact: true })).toBeVisible()
+})
