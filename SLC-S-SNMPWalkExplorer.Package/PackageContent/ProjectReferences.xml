@@ -1,4 +1,4 @@
 <ProjectReferences xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.skyline.be/projectReferences">
 	<ProjectReference Include="..\SLC-S-SNMPWalkCollector\SLC-S-SNMPWalkCollector.csproj" />
-	<ProjectReference Include="..\SLC-S-SNMPWalkExplorer.Api\SLC-S-SNMPWalkExplorer.Api.csproj" />
+	<ProjectReference Include="..\SLC-S-SNMPWalkExplorer.Bridge\SLC-S-SNMPWalkExplorer.Bridge.csproj" />
 </ProjectReferences>

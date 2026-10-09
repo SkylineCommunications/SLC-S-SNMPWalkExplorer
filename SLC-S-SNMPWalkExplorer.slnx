@@ -1,6 +1,6 @@
 <Solution>
   <Project Path="SLC-S-SNMPWalkCollector.Tests/SLC-S-SNMPWalkCollector.Tests.csproj" />
   <Project Path="SLC-S-SNMPWalkCollector/SLC-S-SNMPWalkCollector.csproj" />
-  <Project Path="SLC-S-SNMPWalkExplorer.Api/SLC-S-SNMPWalkExplorer.Api.csproj" />
+  <Project Path="SLC-S-SNMPWalkExplorer.Bridge/SLC-S-SNMPWalkExplorer.Bridge.csproj" />
   <Project Path="SLC-S-SNMPWalkExplorer.Package/SLC-S-SNMPWalkExplorer.Package.csproj" />
 </Solution>

@@ -33,21 +33,44 @@ const artifacts = {
   ],
 }
 
+function bridgeResult(result: unknown) {
+  return { d: { ScriptOutput: [{ Name: 'Result', Value: JSON.stringify(result) }] } }
+}
+
+async function mockBridge(page: import('@playwright/test').Page, handler: (action: string, request: unknown) => unknown) {
+  await page.context().addCookies([
+    { name: 'DMAConnection', value: 'test-connection', domain: '127.0.0.1', path: '/' },
+    { name: 'DMAUser', value: JSON.stringify({ Name: 'Operator Shawn' }), domain: '127.0.0.1', path: '/' },
+  ])
+  await page.route('**/API/v1/Json.asmx/ExecuteAutomationScriptWithOutput', (route) => {
+    const body = route.request().postDataJSON() as {
+      connection: string
+      script: {
+        Parameters: Array<{ Description?: string; Name?: string; Value: string }>
+      }
+    }
+    const parameters = Object.fromEntries(body.script.Parameters.map((parameter) => [parameter.Name ?? parameter.Description, parameter.Value]))
+    return route.fulfill({ json: bridgeResult(handler(parameters.Action, JSON.parse(parameters.RequestJson))) })
+  })
+}
+
 test('loads and refreshes the observed OID hierarchy for the selected artifact', async ({ page }) => {
   const requestedTreeIds: string[] = []
-  await page.route('**/api/v1/custom/snmp-walk-explorer/artifacts', (route) => route.fulfill({ json: artifacts }))
-  await page.route('**/api/v1/custom/snmp-walk-explorer/artifacts/*/tree', (route) => {
-    const artifactId = route.request().url().split('/').slice(-2)[0]
+  await mockBridge(page, (action, request) => {
+    if (action === 'ListArtifacts') return artifacts
+    if (action === 'ListConfigurations') return []
+    if (action === 'GetArtifactTree') {
+      const artifactId = (request as { artifactId: string }).artifactId
     requestedTreeIds.push(artifactId)
     const bindings = artifactId === 'first-run' ? 1 : 2
-    return route.fulfill({
-      json: {
+      return {
         oid: 'root',
         label: 'Observed OIDs',
         bindings,
         children: [],
-      },
-    })
+      }
+    }
+    throw new Error(`Unexpected bridge action: ${action}`)
   })
 
   await page.goto('/')
@@ -61,15 +84,16 @@ test('loads and refreshes the observed OID hierarchy for the selected artifact',
 })
 
 test('saves a configuration through the dedicated create route', async ({ page }) => {
-  let requestMethod = ''
   let requestBody: { name: string } | undefined
 
-  await page.route('**/api/v1/custom/snmp-walk-explorer/artifacts', (route) => route.fulfill({ json: { artifacts: [] } }))
-  await page.route('**/api/v1/custom/snmp-walk-explorer/configs', (route) => route.fulfill({ json: [] }))
-  await page.route('**/api/v1/custom/snmp-walk-explorer/configs/create', (route) => {
-    requestMethod = route.request().method()
-    requestBody = route.request().postDataJSON() as { name: string }
-    return route.fulfill({ json: { ...requestBody, id: 'saved-configuration' } })
+  await mockBridge(page, (action, request) => {
+    if (action === 'ListArtifacts') return { artifacts: [] }
+    if (action === 'ListConfigurations') return []
+    if (action === 'CreateConfiguration') {
+      requestBody = request as { name: string }
+      return { ...requestBody, id: 'saved-configuration' }
+    }
+    throw new Error(`Unexpected bridge action: ${action}`)
   })
 
   await page.goto('/')
@@ -79,7 +103,120 @@ test('saves a configuration through the dedicated create route', async ({ page }
   await page.getByLabel('Credential reference').fill('snmp-readonly')
   await page.getByRole('button', { name: 'Save configuration' }).click()
 
-  await expect.poll(() => requestMethod).toBe('POST')
+  await expect.poll(() => requestBody).toBeTruthy()
   expect(requestBody?.name).toBe('Edge router')
   await expect(page.getByText('Edge router', { exact: true })).toBeVisible()
+})
+
+test('displays the authenticated user name in the topbar', async ({ page }) => {
+  await mockBridge(page, (action) => {
+    if (action === 'ListArtifacts') return { artifacts: [] }
+    return []
+  })
+
+  await page.goto('/')
+  await expect(page.locator('.user-badge')).toContainText('Operator Shawn')
+})
+
+test('updates an existing configuration through the update route', async ({ page }) => {
+  let updatedBody: { id: string; name: string } | undefined
+
+  await mockBridge(page, (action, request) => {
+    if (action === 'ListArtifacts') return { artifacts: [] }
+    if (action === 'ListConfigurations') {
+      return [
+        {
+          id: 'config-1',
+          name: 'Core Switch',
+          targetAddress: '10.0.0.1',
+          targetPort: 161,
+          credentialReference: 'snmp-creds',
+          timeoutMilliseconds: 5000,
+          retries: 2,
+          logLevel: 1,
+          maximumWalkVariables: 100000,
+          concurrentWalkWorkers: 4,
+          useGetBulk: true,
+          bulkMaxRepetitions: 25,
+          partitionRecommendationBindings: 1000,
+          getBulkDiagnosticOid: '',
+          discoveryRoots: '1.3.6.1.1;1.3.6.1.2',
+        },
+      ]
+    }
+    if (action === 'UpdateConfiguration') {
+      updatedBody = request as { id: string; name: string }
+      return updatedBody
+    }
+    throw new Error(`Unexpected bridge action: ${action}`)
+  })
+
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Configurations' }).click()
+  await page.getByRole('button', { name: /Core Switch/ }).click()
+
+  const nameInput = page.getByLabel('Name')
+  await expect(nameInput).toHaveValue('Core Switch')
+  await nameInput.fill('Core Switch Updated')
+  await page.getByRole('button', { name: 'Update configuration' }).click()
+
+  await expect.poll(() => updatedBody).toBeTruthy()
+  expect(updatedBody?.id).toBe('config-1')
+  expect(updatedBody?.name).toBe('Core Switch Updated')
+  await expect(page.getByRole('button', { name: /Core Switch Updated/ })).toBeVisible()
+})
+
+test('deletes a configuration after confirmation', async ({ page }) => {
+  let deletedId: string | undefined
+
+  await mockBridge(page, (action, request) => {
+    if (action === 'ListArtifacts') return { artifacts: [] }
+    if (action === 'ListConfigurations') {
+      return [
+        {
+          id: 'config-to-delete',
+          name: 'Old Router',
+          targetAddress: '10.0.0.2',
+          targetPort: 161,
+          credentialReference: 'snmp-creds',
+          timeoutMilliseconds: 5000,
+          retries: 2,
+          logLevel: 1,
+          maximumWalkVariables: 100000,
+          concurrentWalkWorkers: 4,
+          useGetBulk: true,
+          bulkMaxRepetitions: 25,
+          partitionRecommendationBindings: 1000,
+          getBulkDiagnosticOid: '',
+          discoveryRoots: '1.3.6.1.1',
+        },
+      ]
+    }
+    if (action === 'DeleteConfiguration') {
+      deletedId = (request as { id: string }).id
+      return { success: true }
+    }
+    throw new Error(`Unexpected bridge action: ${action}`)
+  })
+
+  page.on('dialog', (dialog) => dialog.accept())
+
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Configurations' }).click()
+  await page.getByRole('button', { name: /Old Router/ }).click()
+  await page.getByRole('button', { name: 'Delete configuration' }).click()
+
+  await expect.poll(() => deletedId).toBe('config-to-delete')
+  await expect(page.getByText('No saved walk configurations.')).toBeVisible()
+})
+
+test('redirects to DataMiner auth when session cookie is missing', async ({ page }) => {
+  let redirectedUrl = ''
+  await page.route('**/auth/**', (route) => {
+    redirectedUrl = route.request().url()
+    return route.fulfill({ status: 200, contentType: 'text/html', body: '<html><body>Login</body></html>' })
+  })
+
+  await page.goto('/')
+  await expect.poll(() => redirectedUrl).toContain('/auth/?url=')
 })

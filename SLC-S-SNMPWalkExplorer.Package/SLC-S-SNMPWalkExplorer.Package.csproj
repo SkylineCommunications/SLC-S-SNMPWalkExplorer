@@ -1,4 +1,4 @@
-﻿<Project Sdk="Skyline.DataMiner.Sdk">
+<Project Sdk="Skyline.DataMiner.Sdk">
 	<PropertyGroup>
 		<TargetFramework>net48</TargetFramework>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -24,16 +24,12 @@
 		<PackageReference Include="Skyline.DataMiner.Core.AppPackageInstaller" Version="4.2.0" />
 		<PackageReference Include="Skyline.DataMiner.Dev.Automation" Version="10.6.8" />
 		<PackageReference Include="Skyline.DataMiner.Utils.DOM" Version="10.5.2.8" />
-		<PackageReference Include="Skyline.DataMiner.Utils.UserDefinedApiToolkit.Installer" Version="10.6.8.2" />
+		<PackageReference Include="Skyline.DataMiner.Utils.SecureCoding" Version="2.2.3" />
 		<PackageReference Include="System.Collections.Immutable" Version="9.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Compile Include="..\SLC-S-SNMPWalkExplorer.Api\SnmpWalkConfigurationSchema.cs" Link="SnmpWalkConfigurationSchema.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<UdapiProject Include="..\SLC-S-SNMPWalkExplorer.Api\SLC-S-SNMPWalkExplorer.Api.csproj" />
+		<Compile Include="..\SLC-S-SNMPWalkExplorer.Bridge\SnmpWalkConfigurationSchema.cs" Link="SnmpWalkConfigurationSchema.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

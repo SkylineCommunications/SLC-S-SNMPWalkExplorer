@@ -12,14 +12,9 @@ The browser consumes only completed schema-v2 bundles:
 
 ## API integration
 
-The browser uses the deployed DataMiner User-Defined API at the same-origin default `/api/v1/custom/snmp-walk-explorer`. No DataMiner host or domain is embedded in the build. Set `VITE_WALK_API_BASE_URL` only when a different same-origin API route is required:
+The browser calls the packaged `SLC-S-SNMPWalkExplorer.Bridge` Automation script through DataMiner's same-origin `/API/v1/Json.asmx/ExecuteAutomationScriptWithOutput` endpoint. It uses the session established by the DataMiner authentication entry point; no API token, DataMiner host, or credential value is embedded in the build.
 
-```powershell
-$env:VITE_WALK_API_BASE_URL = '/api/v1/custom/snmp-walk-explorer'
-npm run build
-```
-
-The API exposes artifact listing, raw download, binding search, OID-tree navigation, and configuration record list/create operations. Every evidence endpoint resolves `id` through a metadata-complete bundle first. The tree endpoint streams at most 1,000 valid bindings from the committed raw artifact and retains the raw-file size restriction, so the browser never loads an arbitrary evidence file or accesses the DataMiner Agent file share directly.
+The bridge exposes artifact listing, raw download, binding search, OID-tree navigation, and configuration record list/create operations. Every evidence operation resolves an `artifactId` through a metadata-complete bundle first. The tree operation streams at most 1,000 valid bindings from the committed raw artifact and retains the raw-file size restriction, so the browser never loads an arbitrary evidence file or accesses the DataMiner Agent file share directly.
 
 Saved configurations contain non-secret settings only. They do not start collector executions.
 

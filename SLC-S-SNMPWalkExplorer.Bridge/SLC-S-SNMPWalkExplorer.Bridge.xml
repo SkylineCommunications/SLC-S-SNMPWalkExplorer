@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<DMSScript options="272" xmlns="http://www.skyline.be/automation">
+<Name>SLC-S-SNMPWalkExplorer.Bridge</Name>
+<Description>Provides non-interactive configuration operations for the SNMP Walk Explorer.</Description>
+<Type>Automation</Type>
+<Author>Shawn Michaud</Author>
+<CheckSets>FALSE</CheckSets>
+<Folder></Folder>
+<Interactivity>Auto</Interactivity>
+<Protocols>
+</Protocols>
+<Memory>
+</Memory>
+<Parameters>
+<ScriptParameter id="1" type="string" values="">
+<Description>Action</Description>
+</ScriptParameter>
+<ScriptParameter id="2" type="string" values="">
+<Description>RequestJson</Description>
+</ScriptParameter>
+<ScriptParameter id="3" type="string" values="">
+<Description>Result</Description>
+</ScriptParameter>
+</Parameters>
+<Script>
+<Exe id="4" type="csharp">
+<Value><![CDATA[[Project:SLC-S-SNMPWalkExplorer.Bridge]]]></Value>
+<Message></Message>
+</Exe>
+</Script>
+</DMSScript>

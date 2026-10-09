@@ -1,6 +1,6 @@
 # SNMP Walk Explorer Package
 
-Building this project runs the browser production build and stages its `dist` output in `SetupContent/SLC-S-SNMPWalkBrowser`. Installation deploys the browser to `C:\Skyline DataMiner\Webpages\Public\SLC-S-SNMPWalkBrowser` and installs the User-Defined API, collector, and DOM configuration schema.
+Building this project runs the browser production build and stages its `dist` output in `SetupContent/SLC-S-SNMPWalkBrowser`. Installation deploys the browser to `C:\Skyline DataMiner\Webpages\Public\SLC-S-SNMPWalkBrowser` and installs the collector, authenticated Explorer bridge script, and DOM configuration schema.
 
 Install Node dependencies first:
 

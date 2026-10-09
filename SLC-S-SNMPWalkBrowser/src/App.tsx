@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import { ChevronDown, ChevronRight, CircleAlert, Download, FileSearch, Network, Search, Server, ShieldCheck } from 'lucide-react'
+import { ChevronDown, ChevronRight, CircleAlert, Download, FileSearch, Network, Search, Server, ShieldCheck, User } from 'lucide-react'
+import { getConnectionId, getCurrentUser, startKeepAlive } from './api/auth'
+import type { KeepAliveStatus } from './api/auth'
 import { downloadRawArtifact, getTree, listArtifacts, searchBindings } from './api/walkApi'
 import type { Binding, TreeNode, WalkArtifact } from './domain/contracts'
 import { WalkConfigurations } from './WalkConfigurations'
@@ -46,6 +48,8 @@ function TreeBranch({ node, depth = 0, expandedOids, selectedOid, onToggle }: Tr
 }
 
 function App() {
+  const [currentUser] = useState(() => getCurrentUser())
+  const [keepAliveStatus, setKeepAliveStatus] = useState<KeepAliveStatus>('connecting')
   const [artifacts, setArtifacts] = useState<WalkArtifact[]>([])
   const [selectedId, setSelectedId] = useState('')
   const [treeResult, setTreeResult] = useState<ArtifactTree | null>(null)
@@ -57,6 +61,13 @@ function App() {
   const [matchCount, setMatchCount] = useState(0)
   const [loadError, setLoadError] = useState('')
   const [treeLoadError, setTreeLoadError] = useState('')
+
+  useEffect(() => {
+    const connectionId = getConnectionId()
+    if (!connectionId) return
+    const stop = startKeepAlive(connectionId, setKeepAliveStatus)
+    return () => stop()
+  }, [])
 
   useEffect(() => {
     void listArtifacts().then((items) => {
@@ -159,7 +170,16 @@ function App() {
       <header className="topbar">
         <div className="brand"><Network size={23} strokeWidth={2.4} /><span>SNMP Walk Browser</span></div>
         <nav className="main-nav" aria-label="Primary navigation"><button className={page === 'overview' ? 'active' : ''} type="button" onClick={() => setPage('overview')}>Overview</button><button className={page === 'explorer' ? 'active' : ''} type="button" onClick={() => setPage('explorer')}>Explorer</button><button className={page === 'configurations' ? 'active' : ''} type="button" onClick={() => setPage('configurations')}>Configurations</button></nav>
-        <div className="connection"><ShieldCheck size={16} /> Read-only evidence workspace</div>
+        <div className="connection">
+          <span className={`connection-status-dot ${keepAliveStatus}`} title={`DMS Session: ${keepAliveStatus}`} />
+          <ShieldCheck size={16} /> Read-only evidence workspace
+          {currentUser && (
+            <div className="user-badge" title="Authenticated DataMiner User">
+              <User size={14} />
+              <span>{currentUser.name}</span>
+            </div>
+          )}
+        </div>
       </header>
       {page === 'configurations' ? <WalkConfigurations /> : <section className="workspace">
         <aside className="run-list">

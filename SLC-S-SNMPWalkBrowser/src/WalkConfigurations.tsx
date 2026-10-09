@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Save, Server, Settings2 } from 'lucide-react'
-import { createConfiguration, listConfigurations } from './api/walkApi'
+import { Save, Server, Settings2, Trash2 } from 'lucide-react'
+import { createConfiguration, deleteConfiguration, listConfigurations, updateConfiguration } from './api/walkApi'
 import type { WalkConfiguration } from './api/walkApi'
 
 const roots = ['1.3.6.1.1', '1.3.6.1.2', '1.3.6.1.3', '1.3.6.1.4', '1.3.6.1.5', '1.3.6.1.6', '1.3.6.1.7']
@@ -53,11 +53,33 @@ export function WalkConfigurations() {
     setError('')
     setIsSaving(true)
     try {
-      const saved = await createConfiguration(configuration)
-      setConfigurations((current) => [...current, saved].sort((left, right) => left.name.localeCompare(right.name)))
+      const saved = configuration.id
+        ? await updateConfiguration(configuration)
+        : await createConfiguration(configuration)
+      setConfigurations((current) => {
+        const without = current.filter((item) => item.id !== saved.id)
+        return [...without, saved].sort((left, right) => left.name.localeCompare(right.name))
+      })
       loadConfiguration(saved)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Unable to save the configuration.')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  async function handleDelete() {
+    if (!configuration.id) return
+    if (!window.confirm(`Are you sure you want to delete configuration "${configuration.name}"?`)) return
+    setError('')
+    setIsSaving(true)
+    try {
+      await deleteConfiguration(configuration.id)
+      setConfigurations((current) => current.filter((item) => item.id !== configuration.id))
+      setConfiguration(emptyConfiguration())
+      setSelectedRoots(new Set(roots))
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Unable to delete the configuration.')
     } finally {
       setIsSaving(false)
     }
@@ -67,12 +89,12 @@ export function WalkConfigurations() {
     <aside className="configuration-list">
       <div className="panel-heading"><div><span className="eyebrow">Saved configurations</span><h1>Walk targets</h1></div><span className="count-chip">{configurations.length}</span></div>
       <div className="run-stack">
-        {configurations.map((saved) => <button key={saved.id} type="button" className="run-item" onClick={() => loadConfiguration(saved)}><div className="run-topline"><Server size={14} /><strong>{saved.name}</strong></div><span>{saved.targetAddress}:{saved.targetPort}</span><small>{saved.credentialReference}</small></button>)}
+        {configurations.map((saved) => <button key={saved.id} type="button" className={`run-item ${saved.id === configuration.id ? 'selected' : ''}`} onClick={() => loadConfiguration(saved)}><div className="run-topline"><Server size={14} /><strong>{saved.name}</strong></div><span>{saved.targetAddress}:{saved.targetPort}</span><small>{saved.credentialReference}</small></button>)}
         {configurations.length === 0 && !error && <p>No saved walk configurations.</p>}
       </div>
     </aside>
     <section className="content configuration-content">
-      <div className="page-heading"><div><span className="eyebrow">Walk configuration</span><h2>Define a collection</h2><p>Credential values remain in the DataMiner Credentials Library.</p></div><Settings2 size={28} aria-hidden="true" /></div>
+      <div className="page-heading"><div><span className="eyebrow">Walk configuration</span><h2>{configuration.id ? 'Edit configuration' : 'Define a collection'}</h2><p>Credential values remain in the DataMiner Credentials Library.</p></div><Settings2 size={28} aria-hidden="true" /></div>
       <form className="configuration-form panel" onSubmit={(event) => void save(event)}>
         <div className="section-heading"><div><span className="eyebrow">Connection</span><h3>Target and credentials</h3></div></div>
         <div className="form-grid">
@@ -96,7 +118,17 @@ export function WalkConfigurations() {
         <div className="section-heading form-section"><div><span className="eyebrow">Discovery scope</span><h3>Roots</h3></div></div>
         <div className="root-options">{roots.map((root) => <label key={root} className="checkbox-label"><input type="checkbox" checked={selectedRoots.has(root)} onChange={() => toggleRoot(root)} /> {root}</label>)}</div>
         {error && <p className="form-error" role="alert">{error}</p>}
-        <div className="form-actions"><button type="button" onClick={() => { setConfiguration(emptyConfiguration()); setSelectedRoots(new Set(roots)); setError('') }}>New configuration</button><button className="search-button" disabled={isSaving} type="submit"><Save size={17} /> {isSaving ? 'Saving' : 'Save configuration'}</button></div>
+        <div className="form-actions">
+          <button type="button" onClick={() => { setConfiguration(emptyConfiguration()); setSelectedRoots(new Set(roots)); setError('') }}>New configuration</button>
+          {configuration.id && (
+            <button className="delete-button" type="button" disabled={isSaving} onClick={() => void handleDelete()}>
+              <Trash2 size={17} /> Delete configuration
+            </button>
+          )}
+          <button className="search-button" disabled={isSaving} type="submit">
+            <Save size={17} /> {isSaving ? 'Saving...' : configuration.id ? 'Update configuration' : 'Save configuration'}
+          </button>
+        </div>
       </form>
     </section>
   </section>

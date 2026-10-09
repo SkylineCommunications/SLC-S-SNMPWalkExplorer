@@ -26,7 +26,18 @@ internal class Script
 			engine.GenerateInformation("Starting installation");
 			var installer = new AppInstaller(Engine.SLNetRaw, context);
 			installer.InstallDefaultContent();
-			SnmpWalkConfigurationSchema.EnsureProvisioned(engine);
+
+			try
+			{
+				engine.GenerateInformation("Provisioning SNMP Walk Explorer DOM schema...");
+				SnmpWalkConfigurationSchema.EnsureProvisioned(engine);
+				engine.GenerateInformation("SNMP Walk Explorer DOM schema provisioned successfully.");
+			}
+			catch (Exception schemaException)
+			{
+				engine.GenerateInformation($"Notice: DOM schema provisioning deferred to runtime: {schemaException.Message}");
+			}
+
 			SecurePath setupContentPath = SecurePath.CreateSecurePath(installer.GetSetupContentDirectory());
 			SecurePath sourceFrontendPath = SecurePath.ConstructSecurePath(setupContentPath, "SLC-S-SNMPWalkBrowser");
 			SecurePath webpagesPublicPath = SecurePath.CreateSecurePath("C:\\Skyline DataMiner\\Webpages\\Public");

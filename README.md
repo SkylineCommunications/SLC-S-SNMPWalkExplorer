@@ -5,7 +5,7 @@ DataMiner Automation components for collecting SNMP walk evidence and inspecting
 ## Components
 
 - **Collector**: probes SNMPv1 and SNMPv2c, walks configured non-overlapping numeric OID roots, and writes immutable JSON Lines evidence with a metadata commit marker.
-- **Explorer API**: exposes completed evidence bundles and saved non-secret configuration records through a DataMiner User-Defined API.
+- **Explorer bridge**: a non-interactive Automation script that exposes completed evidence bundles and saved non-secret configuration records to the authenticated browser session.
 - **Explorer browser**: displays root outcomes, a bounded OID hierarchy, binding search, raw-evidence download, and saved configuration records.
 
 ## Prerequisites
@@ -38,7 +38,7 @@ Install the combined Explorer `.dmapp` on the target DMA. Open the browser throu
 {PROTOCOL}://{DOMAIN}/auth/?url=%2Fpublic%2FSLC-S-SNMPWalkBrowser%2Findex.html
 ```
 
-The browser saves non-secret configuration records in DOM. Those records are not yet wired to start collector executions; run the collector through Automation with its declared script parameters.
+The browser calls the packaged `SLC-S-SNMPWalkExplorer.Bridge` Automation script through DataMiner's authenticated browser API. It saves non-secret configuration records in DOM and reads only committed evidence identified by artifact ID. Those records are not yet wired to start collector executions; run the collector through Automation with its declared script parameters.
 
 ## Documentation
 
