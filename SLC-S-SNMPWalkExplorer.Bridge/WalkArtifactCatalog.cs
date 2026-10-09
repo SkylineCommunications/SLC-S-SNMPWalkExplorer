@@ -108,6 +108,42 @@ namespace SLCSSNMPWalkExplorerApi
             return false;
         }
 
+        public bool TryDeleteArtifact(string artifactId)
+        {
+            if (String.IsNullOrWhiteSpace(artifactId))
+            {
+                return false;
+            }
+
+            foreach (WalkArtifact artifact in ListArtifacts())
+            {
+                if (!String.Equals(artifact.Id, artifactId, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                SecurePath rawPath = SecurePath.ConstructSecurePath(artifactDirectory, artifact.RawFileName);
+                SecurePath metadataPath = SecurePath.ConstructSecurePath(artifactDirectory, artifact.RawFileName + ".metadata.json");
+
+                bool deletedAny = false;
+                if (File.Exists(rawPath))
+                {
+                    File.Delete(rawPath);
+                    deletedAny = true;
+                }
+
+                if (File.Exists(metadataPath))
+                {
+                    File.Delete(metadataPath);
+                    deletedAny = true;
+                }
+
+                return deletedAny;
+            }
+
+            return false;
+        }
+
         public bool TrySearchBindings(string artifactId, string oidPrefix, string valueContains, out string bindings)
         {
             bindings = null;

@@ -34,6 +34,13 @@
 .form-actions .delete-button { display: inline-flex; align-items: center; gap: 7px; border-color: #d9534f; background: #fff; color: #b7322d; cursor: pointer; }
 .form-actions .delete-button:hover { background: #fdf2f2; border-color: #b7322d; }
 .form-actions .delete-button:disabled { cursor: wait; opacity: .7; }
+.form-actions .execute-walk-button { display: inline-flex; align-items: center; gap: 7px; border-color: #2e7d32; background: #2e7d32; color: #fff; cursor: pointer; }
+.form-actions .execute-walk-button:hover { background: #256629; border-color: #256629; }
+.form-actions .execute-walk-button:disabled { cursor: wait; opacity: .7; }
+.tree-actions .delete-action-button { display: inline-flex; align-items: center; gap: 6px; border-color: #d9534f; color: #b7322d; }
+.tree-actions .delete-action-button:hover { background: #fdf2f2; border-color: #b7322d; }
+.tree-actions .delete-action-button:disabled { cursor: wait; opacity: .7; }
+.form-success { margin: 0; color: #2e7d32; font-size: 13px; font-weight: 600; }
 .form-error { margin: 0; color: #a33f29; font-size: 13px; }
 .connection-status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .connection-status-dot.connected { background: #39916f; }

@@ -19,6 +19,28 @@ export interface WalkConfiguration {
   discoveryRoots: string
 }
 
+export interface WalkExecutionRequest {
+  targetAddress: string
+  targetPort?: number
+  snmpCommunity?: string
+  timeoutMilliseconds?: number
+  retries?: number
+  logLevel?: number
+  maximumWalkVariables?: number
+  concurrentWalkWorkers?: number
+  useGetBulk?: boolean
+  bulkMaxRepetitions?: number
+  partitionRecommendationBindings?: number
+  getBulkDiagnosticOid?: string
+  discoveryRoots?: string
+  runCorrelationId?: string
+}
+
+export interface WalkExecutionResponse {
+  success: boolean
+  correlationId: string
+}
+
 interface ArtifactListResponse {
   artifacts: WalkArtifact[]
 }
@@ -61,6 +83,14 @@ export async function updateConfiguration(configuration: WalkConfiguration): Pro
 
 export async function deleteConfiguration(id: string): Promise<void> {
   await executeBridge<{ success: boolean }>('DeleteConfiguration', { id })
+}
+
+export async function deleteArtifact(id: string): Promise<void> {
+  await executeBridge<{ success: boolean }>('DeleteArtifact', { artifactId: id })
+}
+
+export async function executeWalk(request: WalkExecutionRequest): Promise<WalkExecutionResponse> {
+  return executeBridge<WalkExecutionResponse>('ExecuteWalk', request)
 }
 
 export async function getTree(artifactId: string): Promise<TreeNode> {

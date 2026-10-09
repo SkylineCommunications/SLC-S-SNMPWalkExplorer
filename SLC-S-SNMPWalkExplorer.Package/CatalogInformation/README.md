@@ -13,14 +13,15 @@ By separating collection execution from evidence analysis, the solution provides
 - **Evidence Dashboard**: Inspect completed walk bundles with protocol details, execution status, and root outcome health markers.
 - **OID Tree Navigation**: Explore observed OID trees hierarchically with bounded traversal and branch binding counts.
 - **Binding Search**: Rapidly filter and locate specific OIDs and parameter values across captured walk data.
+- **Run Execution & Cleanup**: Launch background collection runs from saved targets and safely delete obsolete runs directly from the interface.
 - **Raw Evidence Export**: Securely download immutable `.walk` JSON Lines evidence files for offline analysis or simulation.
-- **Walk Configurations**: Centrally manage non-secret SNMP collection settings and discovery roots stored in DataMiner DOM.
 
 ## Use Cases
 
 - **Driver & Connector Development**: Validate real-world device MIB structures and OID responses without needing continuous live access to lab hardware.
 - **Network Device Troubleshooting**: Compare walk runs across devices or firmware versions to isolate missing tables or unexpected OID timeouts.
 - **Simulator Artifact Preparation**: Review and export verified walk evidence for feeding into device simulators such as QA Device Simulator.
+- **Target Configuration & Run Lifecycle**: Centrally configure network endpoints and maintain clean evidence directories on the DMA.
 
 ## Prerequisites
 

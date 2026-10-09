@@ -14,9 +14,10 @@ The browser consumes only completed schema-v2 bundles:
 
 The browser calls the packaged `SLC-S-SNMPWalkExplorer.Bridge` Automation script through DataMiner's same-origin `/API/v1/Json.asmx/ExecuteAutomationScriptWithOutput` endpoint. It uses the session established by the DataMiner authentication entry point; no API token, DataMiner host, or credential value is embedded in the build.
 
-The bridge exposes artifact listing, raw download, binding search, OID-tree navigation, and configuration record list/create operations. Every evidence operation resolves an `artifactId` through a metadata-complete bundle first. The tree operation streams at most 1,000 valid bindings from the committed raw artifact and retains the raw-file size restriction, so the browser never loads an arbitrary evidence file or accesses the DataMiner Agent file share directly.
+The bridge exposes artifact listing, raw download, artifact deletion, binding search, OID-tree navigation, configuration record CRUD operations, and asynchronous walk execution. Every evidence operation resolves an `artifactId` through a metadata-complete bundle first. The tree operation streams at most 1,000 valid bindings from the committed raw artifact and retains the raw-file size restriction, so the browser never loads an arbitrary evidence file or accesses the DataMiner Agent file share directly.
 
-Saved configurations contain non-secret settings only. They do not start collector executions.
+- **Saved configurations**: Contain non-secret settings only. Triggering **Execute walk** from the browser prompts for the SNMP community string just-in-time and executes `SLC-S-SNMPWalkCollector` as an asynchronous background subscript on the DMA.
+- **Evidence deletion**: The **Delete walk** action removes both the raw `.walk` data and its `.walk.metadata.json` marker through the authenticated bridge.
 
 ## Local development
 
