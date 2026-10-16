@@ -14,7 +14,7 @@
 
 <ItemGroup>
 <PackageReference Include="Skyline.DataMiner.Dev.Automation" Version="10.6.8" />
-<PackageReference Include="Skyline.DataMiner.Utils.DOM" Version="10.5.2.8" />
+<PackageReference Include="Skyline.DataMiner.Utils.DOM" Version="10.6.1.1" />
 <PackageReference Include="Skyline.DataMiner.Utils.SecureCoding" Version="2.2.3" />
 </ItemGroup>
 
@@ -23,7 +23,7 @@
 </ItemGroup>
 
 <ItemGroup>
-<PackageReference Include="Skyline.DataMiner.CICD.CSharpAnalysis.Analyzer" Version="2.1.2">
+<PackageReference Include="Skyline.DataMiner.CICD.CSharpAnalysis.Analyzer" Version="2.2.0">
 <PrivateAssets>all</PrivateAssets>
 <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 </PackageReference>
